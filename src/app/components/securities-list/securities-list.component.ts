@@ -3,7 +3,7 @@ import {
   MatCell,
   MatCellDef,
   MatColumnDef,
-  MatHeaderCell,
+  MatHeaderCell,  
   MatHeaderCellDef,
   MatHeaderRow,
   MatHeaderRowDef,
@@ -11,12 +11,13 @@ import {
   MatRow,
   MatRowDef,
 } from '@angular/material/table';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, BehaviorSubject, switchMap } from 'rxjs';
 import { indicate } from '../../utils';
 import { Security } from '../../models/security';
 import { SecurityService } from '../../services/security.service';
 import { FilterableTableComponent } from '../filterable-table/filterable-table.component';
 import { AsyncPipe } from '@angular/common';
+import { SecuritiesFilter } from '../../models/securities-filter';
 
 @Component({
   selector: 'securities-list',
@@ -46,7 +47,15 @@ export class SecuritiesListComponent {
   protected loadingSecurities$: BehaviorSubject<boolean> =
     new BehaviorSubject<boolean>(false);
 
-  protected securities$: Observable<Security[]> = this._securityService
-    .getSecurities({})
-    .pipe(indicate(this.loadingSecurities$));
+    private _filter$ = new BehaviorSubject<SecuritiesFilter>({});
+
+    protected securities$: Observable<Security[]> = this._filter$.pipe(
+      switchMap((filter) =>
+        this._securityService.getSecurities(filter).pipe(indicate(this.loadingSecurities$))
+      )
+    );
+  
+    protected onFilterChange(filter: Record<string, unknown>): void {
+      this._filter$.next(filter as SecuritiesFilter);
+    }
 }

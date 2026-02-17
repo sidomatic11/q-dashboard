@@ -7,6 +7,7 @@ import {Task3Component} from './tasks/task3/task3.component';
 import {MatListItem, MatNavList} from '@angular/material/list';
 import {ActivatedRoute, NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
 import {filter, map, mergeMap, tap} from 'rxjs';
+import { SecurityService } from './services/security.service';
 
 @Component({
   selector: 'app-root',
@@ -53,5 +54,7 @@ export class AppComponent {
         }),
       )
       .subscribe();
+  (window as any).ss = inject(SecurityService);
+
   }
 }
