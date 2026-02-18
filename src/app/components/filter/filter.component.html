@@ -1,4 +1,43 @@
-<mat-form-field>
-  <mat-label>Name</mat-label>
-  <input matInput placeholder="Search by name..." (keydown.enter)="onFilterSubmit($event)">
-</mat-form-field>
+@if (getForm(); as form) {
+  <form class="filter-form" [formGroup]="form" (ngSubmit)="onFilterSubmit()">
+    @for (field of configFields; track field.key) {
+      @if (isText(field.type)) {
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>{{ field.label ?? field.key }}</mat-label>
+          <input
+            matInput
+            [formControlName]="field.key"
+            [placeholder]="field.placeholder ?? ''"
+            (keydown.enter)="onFilterSubmit()"
+          />
+        </mat-form-field>
+      }
+      @if (isMultiSelect(field.type)) {
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>{{ field.label ?? field.key }}</mat-label>
+          <mat-select [formControlName]="field.key" multiple>
+            @for (opt of field.options; track opt.value) {
+              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+      @if (isSelect(field.type)) {
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>{{ field.label ?? field.key }}</mat-label>
+          <mat-select [formControlName]="field.key">
+            @for (opt of field.options; track opt.value) {
+              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+      @if (isBoolean(field.type)) {
+        <mat-slide-toggle [formControlName]="field.key">
+          {{ field.label ?? field.key }}
+        </mat-slide-toggle>
+      }
+    }
+    <button mat-raised-button color="primary" type="submit">Apply</button>
+  </form>
+}

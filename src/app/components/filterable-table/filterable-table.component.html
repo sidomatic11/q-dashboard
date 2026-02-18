@@ -1,7 +1,10 @@
 <!-- Feel free to replace this placeholder with your filterbar -->
 <fieldset class="filter-bar-placeholder">
   <legend>Filter bar should go here</legend>
-  <app-filter (filterChange)="filterChange.emit($event)"></app-filter>
+  <app-filter
+    [config]="filterConfig"
+    (filterChange)="filterChange.emit($event)"
+  ></app-filter>
 </fieldset>
 
 <div class="table-wrapper">

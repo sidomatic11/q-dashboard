@@ -10,6 +10,7 @@ import {
   QueryList,
   ViewChild,
 } from '@angular/core';
+import { FilterFieldConfig } from '../../models/filter-field-config';
 import { Observable } from 'rxjs';
 import {
   MatColumnDef,
@@ -46,6 +47,9 @@ export class FilterableTableComponent<T> implements AfterContentInit {
     | Observable<readonly T[]>
     | null = null;
   @Input() isLoading: boolean | null = false;
+
+  /** Filter field configuration passed through to the filter bar */
+  @Input() filterConfig: FilterFieldConfig[] = [];
 
   @Output() filterChange = new EventEmitter<Record<string, unknown>>();
 
