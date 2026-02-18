@@ -28,6 +28,7 @@ function createRows(): Row[] {
 })
 export class Task2Component {
   rows = signal<Row[]>(createRows())
+  isSelectAllMode = signal<boolean>(false) // when true, we store Deselections in selectionModel
 
   selectionModel = new SelectionModel<Row>(true, undefined, undefined, (o1, o2) => o1.id === o2.id)
   trackBy: TrackByFunction<Row> | undefined = (index, item) => item.id;
@@ -37,10 +38,21 @@ export class Task2Component {
   }
 
   selectAll() {
-    this.selectionModel.select(...this.rows())
+    this.selectionModel.clear();
+    this.isSelectAllMode.set(true)
   }
 
   deselectAll() {
-    this.selectionModel.deselect(...this.rows())
+    this.selectionModel.clear();
+    this.isSelectAllMode.set(false)
+  }
+
+  isRowSelected(row: Row) {
+    if (this.isSelectAllMode()) {
+      // in SelectAllMode, selections in selectionModel are actually Deselections
+      return !this.selectionModel.isSelected(row)
+    } else {
+      return this.selectionModel.isSelected(row)
+    }
   }
 }
