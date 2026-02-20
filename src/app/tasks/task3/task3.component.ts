@@ -50,6 +50,58 @@ export class Task3Component implements AfterViewInit {
   /** Static timestamp for when data was last updated (Feb 19, 2026 14:32 UTC) */
   readonly lastUpdated = 1739968320000;
 
+  /** Direct valuations of chassis 57591 — auction results and appraisals (chronological) */
+  readonly valuationEvents: {
+    date: string;
+    value: number;
+    type: 'auction' | 'appraisal';
+    description: string;
+    location: string;
+  }[] = [
+    {
+      date: 'Mar 2018',
+      value: 31.2,
+      type: 'auction',
+      description: 'Acquisition at RM Sotheby\'s Amelia Island',
+      location: 'Amelia Island, FL',
+    },
+    {
+      date: 'Jun 2021',
+      value: 33.3,
+      type: 'appraisal',
+      description: 'COVID-era adjusted appraisal',
+      location: 'Online / Remote',
+    },
+    {
+      date: 'Feb 2023',
+      value: 35.0,
+      type: 'appraisal',
+      description: 'Interim appraisal post-restoration check',
+      location: 'Pebble Beach, CA',
+    },
+    {
+      date: 'Mar 2024',
+      value: 40.8,
+      type: 'appraisal',
+      description: 'Annual independent valuation',
+      location: 'New York, NY',
+    },
+    {
+      date: 'Jan 2025',
+      value: 43.3,
+      type: 'appraisal',
+      description: 'Scheduled quarterly appraisal',
+      location: 'Pebble Beach, CA',
+    },
+    {
+      date: 'Feb 2026',
+      value: 47.5,
+      type: 'appraisal',
+      description: 'Professional appraisal, FIVA renewal',
+      location: 'Pebble Beach, CA',
+    },
+  ];
+
   readonly transactions: TransactionRow[] = [
     {
       date: 'Feb 2026',
@@ -201,51 +253,43 @@ export class Task3Component implements AfterViewInit {
     const ctx = this.mainChartRef?.nativeElement?.getContext('2d');
     if (!ctx) return;
 
+    const events = this.valuationEvents;
     const gold = '#c9a84c';
     const border = '#2e2e38';
-    const gradMain = ctx.createLinearGradient(0, 0, 0, 280);
-    gradMain.addColorStop(0, 'rgba(201,168,76,0.25)');
-    gradMain.addColorStop(1, 'rgba(201,168,76,0)');
-    const gradIdx = ctx.createLinearGradient(0, 0, 0, 280);
-    gradIdx.addColorStop(0, 'rgba(120,120,192,0.12)');
-    gradIdx.addColorStop(1, 'rgba(120,120,192,0)');
+
+    // Hagerty Blue Chip Index (100 base Mar 2018), scaled to $M for overlay
+    const indexBase = 31.2;
+    const indexValues = [100, 103, 106, 111, 116, 120].map((v) => (v / 100) * indexBase);
 
     const config: ChartConfiguration<'line'> = {
       type: 'line',
       data: {
-        labels: [
-          "Q1'18", "Q3'18", "Q1'19", "Q3'19", "Q1'20", "Q3'20", "Q1'21", "Q3'21",
-          "Q1'22", "Q3'22", "Q1'23", "Q3'23", "Q1'24", "Q3'24", "Q1'25", "Q3'25",
-          "Q1'26",
-        ],
+        labels: events.map((e) => e.date),
         datasets: [
           {
             label: 'Asset Value',
-            data: [
-              31.2, 32.0, 33.5, 34.2, 33.8, 33.0, 33.3, 34.8, 35.5, 36.2, 35.0,
-              37.5, 38.8, 40.2, 42.1, 44.8, 47.5,
-            ],
+            data: events.map((e) => e.value),
             borderColor: gold,
-            backgroundColor: gradMain,
+            backgroundColor: 'transparent',
             borderWidth: 2,
             pointBackgroundColor: gold,
-            pointRadius: 3,
-            pointHoverRadius: 6,
-            fill: true,
-            tension: 0.4,
+            pointRadius: 6,
+            pointHoverRadius: 10,
+            pointStyle: (ctx) => (events[ctx.dataIndex]?.type === 'auction' ? 'circle' : 'rect'),
+            fill: false,
+            tension: 0.3,
+            spanGaps: false,
           },
           {
-            label: 'Vintage Auto Index',
-            data: [100, 101, 103, 104, 102, 101, 103, 105, 107, 108, 106, 109, 111, 113, 112, 115, 117].map(
-              (v) => v * 0.31
-            ),
+            label: 'Hagerty Blue Chip Index',
+            data: indexValues,
             borderColor: '#7878c0',
-            backgroundColor: gradIdx,
+            backgroundColor: 'transparent',
             borderWidth: 1.5,
             borderDash: [5, 4],
             pointRadius: 2,
-            fill: true,
-            tension: 0.4,
+            fill: false,
+            tension: 0.3,
           },
         ],
       },
@@ -272,7 +316,25 @@ export class Task3Component implements AfterViewInit {
             bodyColor: '#9a9088',
             padding: 12,
             callbacks: {
-              label: (ctx) => `  $${(ctx.parsed as { y: number }).y.toFixed(1)}M`,
+              title: (tooltipItems: { dataIndex: number; datasetIndex: number }[]) => {
+                const item = tooltipItems.find((i) => i.datasetIndex === 0) ?? tooltipItems[0];
+                return item ? events[item.dataIndex]?.date ?? '' : '';
+              },
+              label: (ctx) => {
+                if (ctx.datasetIndex === 1) {
+                  return `  $${(ctx.parsed as { y: number }).y.toFixed(1)}M (index)`;
+                }
+                const ev = events[ctx.dataIndex];
+                const typeLabel = ev?.type === 'auction' ? 'Auction' : 'Appraisal';
+                return `  $${(ctx.parsed as { y: number }).y.toFixed(1)}M · ${typeLabel}`;
+              },
+              afterBody: (tooltipItems: { dataIndex: number; datasetIndex: number }[]) => {
+                const item = tooltipItems.find((i) => i.datasetIndex === 0);
+                if (!item) return [];
+                const ev = events[item.dataIndex];
+                if (!ev) return [];
+                return ['', ev.description, ev.location];
+              },
             },
           },
         },
@@ -280,13 +342,13 @@ export class Task3Component implements AfterViewInit {
           x: {
             grid: { color: 'rgba(46,46,56,0.5)', drawTicks: false },
             border: { dash: [4, 4] },
-            ticks: { color: '#3a3a48', maxRotation: 0 },
+            ticks: { color: '#8a8a98', maxRotation: 0 },
           },
           y: {
             grid: { color: 'rgba(46,46,56,0.5)', drawTicks: false },
             border: { display: false },
             ticks: {
-              color: '#3a3a48',
+              color: '#8a8a98',
               callback: (v) => `$${v}M`,
             },
             min: 28,
@@ -359,11 +421,11 @@ export class Task3Component implements AfterViewInit {
           },
         },
         scales: {
-          x: { grid: { display: false }, ticks: { color: '#3a3a48' } },
+          x: { grid: { display: false }, ticks: { color: '#8a8a98' } },
           y: {
             grid: { color: 'rgba(46,46,56,0.5)' },
             border: { display: false },
-            ticks: { color: '#3a3a48', callback: (v) => `${v}%` },
+            ticks: { color: '#8a8a98', callback: (v) => `${v}%` },
           },
         },
       },
