@@ -36,6 +36,7 @@ export class Task3Component implements AfterViewInit {
   @ViewChild('mainChart') mainChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('barChart') barChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('donutChart') donutChartRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('scatterChart') scatterChartRef!: ElementRef<HTMLCanvasElement>;
 
   currentSlide = 0;
   readonly carouselDots = [0, 1, 2, 3];
@@ -100,6 +101,34 @@ export class Task3Component implements AfterViewInit {
       description: 'Professional appraisal, FIVA renewal',
       location: 'Pebble Beach, CA',
     },
+  ];
+
+  /** Comparable sales for scatter: x = year.fraction, y = $M, chassis, description, isOwnAsset */
+  readonly comparableSalesScatter: {
+    x: number;
+    y: number;
+    chassis: string;
+    description: string;
+    isOwnAsset: boolean;
+  }[] = [
+    { x: 2018.25, y: 31.2, chassis: '57591', description: 'Acquisition at RM Sotheby\'s Amelia Island', isOwnAsset: true },
+    { x: 2018.75, y: 32.8, chassis: '57596', description: 'RM Sotheby\'s Monterey auction', isOwnAsset: false },
+    { x: 2019.5, y: 34.1, chassis: '57597', description: 'Private treaty sale', isOwnAsset: false },
+    { x: 2020.17, y: 33.5, chassis: '57598', description: 'Gooding & Company, Pebble Beach', isOwnAsset: false },
+    { x: 2020.83, y: 32.2, chassis: '57599', description: 'Bonhams Quail Lodge sale', isOwnAsset: false },
+    { x: 2021.5, y: 33.3, chassis: '57591', description: 'COVID-era adjusted appraisal', isOwnAsset: true },
+    { x: 2022.25, y: 36.8, chassis: '57600', description: 'RM Sotheby\'s Amelia Island', isOwnAsset: false },
+    { x: 2022.75, y: 37.5, chassis: '57601', description: 'Private treaty sale, Geneva', isOwnAsset: false },
+    { x: 2023.17, y: 35.0, chassis: '57591', description: 'Interim appraisal post-restoration check', isOwnAsset: true },
+    { x: 2023.5, y: 38.2, chassis: '57602', description: 'Bonhams Festival of Speed', isOwnAsset: false },
+    { x: 2023.83, y: 38.9, chassis: '57595', description: 'Bonhams Paris Rétromobile sale', isOwnAsset: false },
+    { x: 2024.25, y: 40.8, chassis: '57591', description: 'Annual independent valuation', isOwnAsset: true },
+    { x: 2024.75, y: 44.2, chassis: '57594', description: 'Gooding & Company, Pebble Beach', isOwnAsset: false },
+    { x: 2025.08, y: 43.3, chassis: '57591', description: 'Scheduled quarterly appraisal', isOwnAsset: true },
+    { x: 2025.5, y: 42.4, chassis: '57593', description: 'RM Sotheby\'s Monaco auction', isOwnAsset: false },
+    { x: 2025.92, y: 45.0, chassis: '57592', description: 'Private treaty sale, Geneva', isOwnAsset: false },
+    { x: 2026.17, y: 47.5, chassis: '57591', description: 'Professional appraisal, FIVA renewal', isOwnAsset: true },
+    { x: 2026.25, y: 44.8, chassis: '57603', description: 'RM Sotheby\'s Amelia Island', isOwnAsset: false },
   ];
 
   readonly transactions: TransactionRow[] = [
@@ -208,6 +237,7 @@ export class Task3Component implements AfterViewInit {
   private mainChart: Chart | null = null;
   private barChart: Chart | null = null;
   private donutChart: Chart | null = null;
+  private scatterChart: Chart | null = null;
 
   constructor(
     private destroyRef: DestroyRef,
@@ -247,6 +277,7 @@ export class Task3Component implements AfterViewInit {
     this.initMainChart();
     this.initBarChart();
     this.initDonutChart();
+    this.initScatterChart();
   }
 
   private initMainChart(): void {
@@ -498,5 +529,114 @@ export class Task3Component implements AfterViewInit {
     };
 
     this.donutChart = new Chart(ctx, config);
+  }
+
+  private initScatterChart(): void {
+    const ctx = this.scatterChartRef?.nativeElement?.getContext('2d');
+    if (!ctx) return;
+
+    const scatterData = this.comparableSalesScatter;
+    const gold = '#c9a84c';
+    const border = '#2e2e38';
+
+    const peerPoints = scatterData.filter((d) => !d.isOwnAsset).map((d) => ({ x: d.x, y: d.y }));
+    const ownPoints = scatterData.filter((d) => d.isOwnAsset).map((d) => ({ x: d.x, y: d.y }));
+
+    const config: ChartConfiguration<'scatter'> = {
+      type: 'scatter',
+      data: {
+        datasets: [
+          {
+            label: 'Comparable sales',
+            data: peerPoints,
+            pointRadius: 5,
+            pointBackgroundColor: 'rgba(120,120,192,0.6)',
+            pointBorderColor: '#7878c0',
+            pointBorderWidth: 1,
+          },
+          {
+            label: 'Your asset',
+            data: ownPoints,
+            pointRadius: 8,
+            pointBackgroundColor: gold,
+            pointBorderColor: gold,
+            pointBorderWidth: 2,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            align: 'end',
+            labels: {
+              boxWidth: 24,
+              boxHeight: 2,
+              color: '#5a5550',
+              padding: 12,
+              font: { size: 10, family: "'DM Mono', monospace" },
+            },
+          },
+          tooltip: {
+            backgroundColor: '#141416',
+            borderColor: border,
+            borderWidth: 1,
+            titleColor: gold,
+            bodyColor: '#9a9088',
+            padding: 12,
+            callbacks: {
+              title: (items) => {
+                const idx = items[0]?.dataIndex;
+                const datasetIdx = items[0]?.datasetIndex;
+                const pts = datasetIdx === 0
+                  ? scatterData.filter((d) => !d.isOwnAsset)
+                  : scatterData.filter((d) => d.isOwnAsset);
+                const d = pts[idx];
+                return d ? `Chassis ${d.chassis} · ${d.isOwnAsset ? 'Your asset' : 'Comparable sale'}` : '';
+              },
+              label: (ctx) => {
+                const idx = ctx.dataIndex;
+                const datasetIdx = ctx.datasetIndex;
+                const pts = datasetIdx === 0
+                  ? scatterData.filter((d) => !d.isOwnAsset)
+                  : scatterData.filter((d) => d.isOwnAsset);
+                const d = pts[idx];
+                if (!d) return '';
+                return [`$${d.y.toFixed(1)}M`, d.description];
+              },
+            },
+          },
+        },
+        scales: {
+          x: {
+            min: 2017.5,
+            max: 2026.5,
+            grid: { color: 'rgba(46,46,56,0.5)' },
+            ticks: {
+              color: '#8a8a98',
+              stepSize: 1,
+              maxTicksLimit: 10,
+              callback: (value) => {
+                const n = typeof value === 'string' ? parseFloat(value) : value;
+                return typeof n === 'number' && !Number.isNaN(n) ? String(Math.round(n)) : '';
+              },
+            },
+          },
+          y: {
+            min: 28,
+            max: 52,
+            grid: { color: 'rgba(46,46,56,0.5)' },
+            ticks: {
+              color: '#8a8a98',
+              callback: (v) => `$${v}M`,
+            },
+          },
+        },
+      },
+    };
+
+    this.scatterChart = new Chart(ctx, config);
   }
 }

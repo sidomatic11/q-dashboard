@@ -658,6 +658,21 @@ section {
   height: 400px;
 }
 
+.scatter-chart-row {
+  display: flex;
+  gap: 2px;
+  margin-top: 2px;
+  background: var(--border);
+}
+
+.scatter-chart-panel {
+  flex: 0 0 50%;
+}
+
+.scatter-chart-h {
+  height: 216px;
+}
+
 .stats-panel {
   background: var(--panel);
   padding: 20px 36px;
