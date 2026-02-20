@@ -34,8 +34,6 @@ interface TransactionRow {
 })
 export class Task3Component implements AfterViewInit {
   @ViewChild('mainChart') mainChartRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('barChart') barChartRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('donutChart') donutChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('scatterChart') scatterChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('tcoChart') tcoChartRef!: ElementRef<HTMLCanvasElement>;
 
@@ -245,9 +243,12 @@ export class Task3Component implements AfterViewInit {
     },
   ];
 
+  /** Transactions for comparable cars only — excludes our asset (chassis 57591) */
+  get comparableTransactions(): TransactionRow[] {
+    return this.transactions.filter((r) => !r.description.includes('57591'));
+  }
+
   private mainChart: Chart | null = null;
-  private barChart: Chart | null = null;
-  private donutChart: Chart | null = null;
   private scatterChart: Chart | null = null;
   private tcoChart: Chart | null = null;
 
@@ -287,8 +288,6 @@ export class Task3Component implements AfterViewInit {
 
   private initCharts(): void {
     this.initMainChart();
-    this.initBarChart();
-    this.initDonutChart();
     this.initScatterChart();
     this.initTcoChart();
   }
@@ -403,145 +402,6 @@ export class Task3Component implements AfterViewInit {
     };
 
     this.mainChart = new Chart(ctx, config);
-  }
-
-  private initBarChart(): void {
-    const ctx = this.barChartRef?.nativeElement?.getContext('2d');
-    if (!ctx) return;
-
-    const gold = '#c9a84c';
-    const border = '#2e2e38';
-
-    const config: ChartConfiguration<'bar'> = {
-      type: 'bar',
-      data: {
-        labels: ['2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'],
-        datasets: [
-          {
-            label: 'Asset',
-            data: [2.6, 4.7, -0.6, 1.5, 7.5, 8.5, 9.9, 9.7],
-            backgroundColor: (ctx) =>
-              (ctx.raw as number) >= 0
-                ? 'rgba(201,168,76,0.7)'
-                : 'rgba(224,85,85,0.7)',
-            borderRadius: 2,
-            borderSkipped: false,
-          },
-          {
-            label: 'Index',
-            data: [1.0, 3.0, -1.5, 2.0, 4.5, 5.0, 6.0, 5.5],
-            backgroundColor: 'rgba(120,120,192,0.35)',
-            borderRadius: 2,
-            borderSkipped: false,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'top',
-            align: 'end',
-            labels: {
-              boxWidth: 16,
-              boxHeight: 2,
-              color: '#5a5550',
-              padding: 12,
-              font: { size: 9 },
-            },
-          },
-          tooltip: {
-            backgroundColor: '#141416',
-            borderColor: border,
-            borderWidth: 1,
-            titleColor: gold,
-            bodyColor: '#9a9088',
-            padding: 10,
-            callbacks: {
-              label: (ctx) =>
-                `  ${(ctx.parsed as { y: number }).y > 0 ? '+' : ''}${(ctx.parsed as { y: number }).y}%`,
-            },
-          },
-        },
-        scales: {
-          x: { grid: { display: false }, ticks: { color: '#8a8a98' } },
-          y: {
-            grid: { color: 'rgba(46,46,56,0.5)' },
-            border: { display: false },
-            ticks: { color: '#8a8a98', callback: (v) => `${v}%` },
-          },
-        },
-      },
-    };
-
-    this.barChart = new Chart(ctx, config);
-  }
-
-  private initDonutChart(): void {
-    const ctx = this.donutChartRef?.nativeElement?.getContext('2d');
-    if (!ctx) return;
-
-    const gold = '#c9a84c';
-    const border = '#2e2e38';
-
-    const config: ChartConfiguration<'doughnut'> = {
-      type: 'doughnut',
-      data: {
-        labels: [
-          'Vintage Automobiles',
-          'Fine Art',
-          'Classic Watches',
-          'Wine & Spirits',
-          'Other Collectibles',
-        ],
-        datasets: [
-          {
-            data: [38.4, 26.1, 18.2, 10.5, 6.8],
-            backgroundColor: [
-              'rgba(201,168,76,0.85)',
-              'rgba(120,120,192,0.7)',
-              'rgba(61,186,122,0.65)',
-              'rgba(224,140,85,0.6)',
-              'rgba(90,85,80,0.5)',
-            ],
-            borderColor: '#0a0a0b',
-            borderWidth: 3,
-            hoverOffset: 6,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '68%',
-        plugins: {
-          legend: {
-            position: 'right',
-            labels: {
-              color: '#5a5550',
-              padding: 10,
-              font: { size: 9, family: "'DM Mono', monospace" },
-              boxWidth: 10,
-              boxHeight: 10,
-            },
-          },
-          tooltip: {
-            backgroundColor: '#141416',
-            borderColor: border,
-            borderWidth: 1,
-            titleColor: gold,
-            bodyColor: '#9a9088',
-            padding: 10,
-            callbacks: {
-              label: (ctx) => `  ${ctx.parsed}%`,
-            },
-          },
-        },
-      },
-    };
-
-    this.donutChart = new Chart(ctx, config);
   }
 
   private initScatterChart(): void {

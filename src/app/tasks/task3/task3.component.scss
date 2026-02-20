@@ -731,25 +731,6 @@ section {
   color: var(--red-light);
 }
 
-.perf-bottom {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2px;
-  background: var(--border);
-  margin-top: 2px;
-  min-width: 0;
-}
-
-.mini-chart-panel {
-  background: var(--panel);
-  padding: 28px 32px;
-  min-width: 0;
-}
-
-.mini-chart-h {
-  height: 140px;
-}
-
 /* ── TRANSACTIONS ── */
 .table-wrap {
   background: var(--panel);
@@ -758,7 +739,7 @@ section {
 
 .table-header-row {
   display: grid;
-  grid-template-columns: 140px 1fr 160px 160px 120px 140px;
+  grid-template-columns: 80px 1fr 160px 160px 120px 80px;
   padding: 14px 28px;
   background: var(--charcoal);
   border-bottom: 1px solid var(--border);
@@ -777,7 +758,7 @@ section {
 
 .table-row {
   display: grid;
-  grid-template-columns: 140px 1fr 160px 160px 120px 140px;
+  grid-template-columns: 80px 1fr 160px 160px 120px 80px;
   padding: 18px 28px;
   border-bottom: 1px solid var(--border);
   align-items: center;
