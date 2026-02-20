@@ -17,4 +17,12 @@
   <table mat-table [dataSource]="dataSource ?? []" class="mat-elevation-z8">
     <ng-content></ng-content>
   </table>
+
+  @if (canLoadMore) {
+    <div style="padding: 1rem; text-align: center">
+      <button mat-stroked-button type="button" [disabled]="isLoading" (click)="loadMore.emit()">
+        Load more
+      </button>
+    </div>
+  }
 </div>

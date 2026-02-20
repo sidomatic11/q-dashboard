@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import {
   MatCell,
   MatCellDef,
@@ -11,7 +11,7 @@ import {
   MatRow,
   MatRowDef,
 } from '@angular/material/table';
-import { Observable, BehaviorSubject, switchMap } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { indicate } from '../../utils';
 import { Security } from '../../models/security';
 import { SecurityService } from '../../services/security.service';
@@ -19,6 +19,9 @@ import { FilterableTableComponent } from '../filterable-table/filterable-table.c
 import { AsyncPipe } from '@angular/common';
 import { SecuritiesFilter } from '../../models/securities-filter';
 import { FilterFieldConfig } from '../../models/filter-field-config';
+
+/** Fixed page size. Service expects limit as end index (skip + PAGE_SIZE). */
+const PAGE_SIZE = 10;
 
 /** Filter config for SecuritiesFilter. Extensible: add new fields here when interface changes. */
 const SECURITIES_FILTER_CONFIG: FilterFieldConfig[] = [
@@ -49,17 +52,6 @@ const SECURITIES_FILTER_CONFIG: FilterFieldConfig[] = [
     ],
   },
   { key: 'isPrivate', type: 'boolean', label: 'Private only' },
-  {
-    key: 'limit',
-    type: 'select',
-    label: 'Page size',
-    options: [
-      { value: '10', label: '10' },
-      { value: '25', label: '25' },
-      { value: '50', label: '50' },
-      { value: '100', label: '100' },
-    ],
-  },
 ];
 
 @Component({
@@ -83,31 +75,56 @@ const SECURITIES_FILTER_CONFIG: FilterFieldConfig[] = [
   styleUrl: './securities-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SecuritiesListComponent {
+export class SecuritiesListComponent implements OnInit {
   protected displayedColumns: string[] = ['name', 'type', 'currency'];
   protected securitiesFilterConfig = SECURITIES_FILTER_CONFIG;
 
   private _securityService = inject(SecurityService);
   protected loadingSecurities$ = new BehaviorSubject<boolean>(false);
 
-  private _filter$ = new BehaviorSubject<SecuritiesFilter>({});
+  private _criteria$ = new BehaviorSubject<SecuritiesFilter>({});
+  private _accumulated$ = new BehaviorSubject<Security[]>([]);
+  private _canLoadMore$ = new BehaviorSubject<boolean>(true);
 
-  protected securities$: Observable<Security[]> = this._filter$.pipe(
-    switchMap((filter) =>
-      this._securityService
-        .getSecurities(filter)
-        .pipe(indicate(this.loadingSecurities$))
-    )
-  );
+  protected securities$: Observable<Security[]> = this._accumulated$.asObservable();
+  protected canLoadMore$ = this._canLoadMore$.asObservable();
+
+  ngOnInit(): void {
+    this._fetchPage(0, false);
+  }
 
   protected onFilterChange(filter: Record<string, unknown>): void {
-    const f: SecuritiesFilter = { ...filter } as SecuritiesFilter;
-    if (typeof f.limit === 'string') {
-      const parsed = parseInt(f.limit, 10);
-      f.limit = Number.isNaN(parsed) ? 100 : parsed;
-    }
-    if (f.limit == null) f.limit = 100;
-    f.skip = f.skip ?? 0;
-    this._filter$.next(f);
+    this._criteria$.next({ ...filter } as SecuritiesFilter);
+    this._accumulated$.next([]);
+    this._canLoadMore$.next(true);
+    this._fetchPage(0, false);
+  }
+
+  protected onLoadMore(): void {
+    this._fetchPage(this._accumulated$.getValue().length, true);
+  }
+
+  private _fetchPage(skip: number, append: boolean): void {
+    const criteria = this._criteria$.getValue();
+    const filter: SecuritiesFilter = {
+      ...criteria,
+      skip,
+      limit: skip + PAGE_SIZE,
+    };
+
+    this._securityService
+      .getSecurities(filter)
+      .pipe(indicate(this.loadingSecurities$))
+      .subscribe({
+        next: (items) => {
+          if (append) {
+            const current = this._accumulated$.getValue();
+            this._accumulated$.next([...current, ...items]);
+          } else {
+            this._accumulated$.next(items);
+          }
+          this._canLoadMore$.next(items.length >= PAGE_SIZE);
+        },
+      });
   }
 }

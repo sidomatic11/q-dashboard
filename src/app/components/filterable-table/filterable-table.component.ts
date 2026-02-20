@@ -21,12 +21,13 @@ import {
 } from '@angular/material/table';
 import { DataSource } from '@angular/cdk/collections';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatButtonModule } from '@angular/material/button';
 import { FilterComponent } from '../filter/filter.component';
 
 @Component({
   selector: 'filterable-table',
   standalone: true,
-  imports: [MatProgressSpinner, MatTable, FilterComponent],
+  imports: [MatProgressSpinner, MatTable, MatButtonModule, FilterComponent],
   templateUrl: './filterable-table.component.html',
   styleUrl: './filterable-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -51,7 +52,11 @@ export class FilterableTableComponent<T> implements AfterContentInit {
   /** Filter field configuration passed through to the filter bar */
   @Input() filterConfig: FilterFieldConfig[] = [];
 
+  /** Whether to show the Load more button. When false, button is hidden. */
+  @Input() canLoadMore: boolean | null = false;
+
   @Output() filterChange = new EventEmitter<Record<string, unknown>>();
+  @Output() loadMore = new EventEmitter<void>();
 
   public ngAfterContentInit(): void {
     this.columnDefs?.forEach((columnDef) =>
