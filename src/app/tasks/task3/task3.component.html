@@ -2,9 +2,12 @@
   <!-- TOPBAR -->
   <nav class="topbar">
     <span class="topbar-brand">Qplix — Asset Intelligence</span>
-    <div class="topbar-status">
-      <mat-icon class="topbar-refresh-icon">refresh</mat-icon>
-      {{ lastUpdated | date:'MMM d, yyyy · HH:mm' }}
+    <div class="topbar-right">
+      <span class="topbar-date">{{ lastUpdated | date:'MMM d, yyyy · HH:mm' }}</span>
+      <button type="button" class="topbar-refresh-btn">
+        <mat-icon>refresh</mat-icon>
+        <span>Refresh</span>
+      </button>
     </div>
   </nav>
 
@@ -276,7 +279,7 @@
         <div class="table-wrap">
           <div class="table-header-row">
             <div class="th">Date</div>
-            <div class="th">Description</div>
+            <div class="th">Asset</div>
             <div class="th">Sale Price</div>
             <div class="th">Location</div>
             <div class="th">Type</div>
@@ -296,8 +299,7 @@
             }
           </div>
           <div class="table-footer">
-            <span class="table-footer-text">{{ comparableTransactions.length }} records · Type 57SC Atlantic comparable sales</span>
-            <span class="table-total">Total Appreciation: <span>+$16,300,000</span></span>
+            <span class="table-footer-link">View full report</span>
           </div>
         </div>
       </section>
