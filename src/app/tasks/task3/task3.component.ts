@@ -37,6 +37,7 @@ export class Task3Component implements AfterViewInit {
   @ViewChild('barChart') barChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('donutChart') donutChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('scatterChart') scatterChartRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('tcoChart') tcoChartRef!: ElementRef<HTMLCanvasElement>;
 
   currentSlide = 0;
   readonly carouselDots = [0, 1, 2, 3];
@@ -130,6 +131,16 @@ export class Task3Component implements AfterViewInit {
     { x: 2026.17, y: 47.5, chassis: '57591', description: 'Professional appraisal, FIVA renewal', isOwnAsset: true },
     { x: 2026.25, y: 44.8, chassis: '57603', description: 'RM Sotheby\'s Amelia Island', isOwnAsset: false },
   ];
+
+  /** TCO breakdown for chassis 57591 (2018–2026) — $M */
+  readonly tcoBreakdown = {
+    acquisition: 31.2,
+    storage: 0.84,      // ~$105k/yr × 8 yrs
+    insurance: 1.92,    // ~$240k/yr × 8 yrs
+    restoration: 0.65, // post-acquisition work
+    maintenance: 0.48, // routine servicing
+  };
+  readonly currentValue = 47.5; // from valuationEvents
 
   readonly transactions: TransactionRow[] = [
     {
@@ -238,6 +249,7 @@ export class Task3Component implements AfterViewInit {
   private barChart: Chart | null = null;
   private donutChart: Chart | null = null;
   private scatterChart: Chart | null = null;
+  private tcoChart: Chart | null = null;
 
   constructor(
     private destroyRef: DestroyRef,
@@ -278,6 +290,7 @@ export class Task3Component implements AfterViewInit {
     this.initBarChart();
     this.initDonutChart();
     this.initScatterChart();
+    this.initTcoChart();
   }
 
   private initMainChart(): void {
@@ -638,5 +651,136 @@ export class Task3Component implements AfterViewInit {
     };
 
     this.scatterChart = new Chart(ctx, config);
+  }
+
+  private initTcoChart(): void {
+    const ctx = this.tcoChartRef?.nativeElement?.getContext('2d');
+    if (!ctx) return;
+
+    const tco = this.tcoBreakdown;
+    const totalTco = tco.acquisition + tco.storage + tco.insurance + tco.restoration + tco.maintenance;
+    const gold = '#c9a84c';
+    const border = '#2e2e38';
+
+    const config: ChartConfiguration<'bar'> = {
+      type: 'bar',
+      data: {
+        labels: [['Total Cost of', 'Ownership'], ['Current', 'Value']],
+        datasets: [
+          {
+            label: 'Acquisition',
+            data: [tco.acquisition, null],
+            backgroundColor: 'rgba(180,140,50,0.9)',
+            stack: 'costs',
+            borderRadius: 0,
+            borderSkipped: false,
+          },
+          {
+            label: 'Storage',
+            data: [tco.storage, null],
+            backgroundColor: 'rgba(120,120,192,0.7)',
+            stack: 'costs',
+            borderRadius: 0,
+            borderSkipped: false,
+          },
+          {
+            label: 'Insurance',
+            data: [tco.insurance, null],
+            backgroundColor: 'rgba(61,186,122,0.7)',
+            stack: 'costs',
+            borderRadius: 0,
+            borderSkipped: false,
+          },
+          {
+            label: 'Restoration',
+            data: [tco.restoration, null],
+            backgroundColor: 'rgba(224,140,85,0.7)',
+            stack: 'costs',
+            borderRadius: 0,
+            borderSkipped: false,
+          },
+          {
+            label: 'Maintenance',
+            data: [tco.maintenance, null],
+            backgroundColor: 'rgba(90,85,80,0.6)',
+            stack: 'costs',
+            borderRadius: 0,
+            borderSkipped: false,
+          },
+          {
+            label: 'Current Value',
+            data: [null, this.currentValue],
+            backgroundColor: 'rgba(201,168,76,0.85)',
+            stack: 'value',
+            borderRadius: 2,
+            borderSkipped: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        datasets: {
+          bar: {
+            categoryPercentage: 0.5,
+            barPercentage: 1
+          },
+        },
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: {
+              boxWidth: 10,
+              boxHeight: 10,
+              color: '#5a5550',
+              padding: 10,
+              font: { size: 9, family: "'DM Mono', monospace" },
+            },
+          },
+          tooltip: {
+            backgroundColor: '#141416',
+            borderColor: border,
+            borderWidth: 1,
+            titleColor: gold,
+            bodyColor: '#9a9088',
+            padding: 12,
+            callbacks: {
+              label: (ctx) => {
+                const v = ctx.raw as number | null;
+                if (v == null) return '';
+                const pct = ctx.dataIndex === 0
+                  ? ((v / totalTco) * 100).toFixed(1)
+                  : ((v / this.currentValue) * 100).toFixed(1);
+                return `  $${v.toFixed(2)}M (${pct}%)`;
+              },
+            },
+          },
+        },
+        scales: {
+          x: {
+            offset: true,
+            grid: { display: false },
+            ticks: {
+              color: '#8a8a98',
+              font: { size: 10 },
+              maxRotation: 0,
+              autoSkip: false,
+            },
+          },
+          y: {
+            grid: { color: 'rgba(46,46,56,0.5)' },
+            border: { display: false },
+            ticks: {
+              color: '#8a8a98',
+              callback: (v) => `$${v}M`,
+            },
+            min: 0,
+            max: 55,
+          },
+        },
+      },
+    };
+
+    this.tcoChart = new Chart(ctx, config);
   }
 }
