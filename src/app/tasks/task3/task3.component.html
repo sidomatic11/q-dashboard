@@ -1,1 +1,293 @@
-<img src="monet.png" height="auto" width="100%"/>
+<div class="page-wrap">
+  <!-- TOPBAR -->
+  <nav class="topbar">
+    <span class="topbar-brand">Qplix — Asset Intelligence</span>
+    <div class="topbar-status">
+      <mat-icon class="topbar-refresh-icon">refresh</mat-icon>
+      {{ lastUpdated | date:'MMM d, yyyy · HH:mm' }}
+    </div>
+  </nav>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-gold-line"></div>
+
+    <!-- LEFT: Content -->
+    <div class="header-content fade-in">
+      <div class="asset-class-tag">Vintage Automobile · Hypercar Tier</div>
+
+      <h1 class="asset-title">
+        1937 Bugatti<br><em>Type 57SC Atlantic</em>
+      </h1>
+      <p class="asset-subtitle">Chassis No. 57591 · "La Voiture Noire"</p>
+
+      <div class="value-block">
+        <div class="value-label">Current Estimated Value</div>
+        <div class="value-amount">
+          <span class="value-currency">$</span>47.5M
+        </div>
+        <div class="value-change">
+          ▲ +$4.2M &nbsp;(+9.7%) &nbsp;YTD
+        </div>
+      </div>
+
+      <!-- <div class="header-meta">
+        <div class="header-meta-item">
+          <div class="label">Asset Class</div>
+          <div class="val">Collectible Auto</div>
+        </div>
+        <div class="header-meta-item">
+          <div class="label">Acquired</div>
+          <div class="val">March 2018</div>
+        </div>
+        <div class="header-meta-item">
+          <div class="label">Portfolio Weight</div>
+          <div class="val">38.4%</div>
+        </div>
+        <div class="header-meta-item">
+          <div class="label">Custodian</div>
+          <div class="val">Pebble Beach Vault</div>
+        </div>
+      </div> -->
+    </div>
+
+    <!-- RIGHT: Carousel -->
+    <div class="header-visual fade-in" style="animation-delay:0.3s">
+      <div class="carousel carousel-4-3">
+        <div class="carousel-track" [style.transform]="'translateX(-' + (currentSlide * (100 / 4)) + '%)'">
+          @for (img of carouselImages; track img.src) {
+          <div class="carousel-slide">
+            <div class="carousel-image-wrap">
+              <img [src]="img.src" [alt]="img.alt" class="carousel-image" />
+            </div>
+          </div>
+          }
+        </div>
+
+        <button class="carousel-btn prev" (click)="prevSlide()" type="button">‹</button>
+        <button class="carousel-btn next" (click)="nextSlide()" type="button">›</button>
+        <div class="carousel-dots">
+          @for (i of carouselDots; track i) {
+          <div class="dot" [class.active]="currentSlide === i" (click)="goSlide(i)" role="button" tabindex="0"></div>
+          }
+        </div>
+      </div>
+    </div>
+
+
+    <div class="header-gold-line bottom"></div>
+  </header>
+
+  <!-- SECTIONS 01 & 02: ASSET DETAILS + PERFORMANCE (side by side) -->
+  <div class="details-perf-wrapper">
+    <section id="details" class="details-column">
+      <div class="section-header">
+        <span class="section-number">01</span>
+        <h2 class="section-title">Asset Details</h2>
+        <span class="section-desc">Static reference information</span>
+      </div>
+
+      <div class="details-grid">
+        <div class="detail-card fade-in">
+          <span class="detail-icon">⚡</span>
+          <div class="detail-label">Serial / Chassis No.</div>
+          <div class="detail-value">57591</div>
+          <div class="detail-sub">Type 57SC · Factory build #4</div>
+        </div>
+
+        <div class="detail-card fade-in">
+          <span class="detail-icon">📅</span>
+          <div class="detail-label">Acquisition Date</div>
+          <div class="detail-value">March 14, 2018</div>
+          <div class="detail-sub">RM Sotheby's — Amelia Island</div>
+        </div>
+
+        <div class="detail-card fade-in">
+          <span class="detail-icon">💼</span>
+          <div class="detail-label">Acquisition Cost</div>
+          <div class="detail-value">$31,200,000</div>
+          <div class="detail-sub">Hammer price + buyer's premium</div>
+        </div>
+
+        <div class="detail-card fade-in">
+          <span class="detail-icon">🏛</span>
+          <div class="detail-label">Condition</div>
+          <div class="detail-value"><span class="badge badge-gold">Concours — Pristine</span></div>
+          <div class="detail-sub">Last assessed: Jan 2026 · FIVA certified</div>
+        </div>
+
+        <div class="detail-card fade-in">
+          <span class="detail-icon">🔧</span>
+          <div class="detail-label">Engine</div>
+          <div class="detail-value">3.3L DOHC · Supercharged</div>
+          <div class="detail-sub">210 bhp · 4-speed gearbox</div>
+        </div>
+
+        <div class="detail-card fade-in">
+          <span class="detail-icon">🎨</span>
+          <div class="detail-label">Colour / Finish</div>
+          <div class="detail-value">Noir Profond</div>
+          <div class="detail-sub">Original factory paint · unrestored</div>
+        </div>
+
+        <div class="detail-card fade-in">
+          <span class="detail-icon">🌍</span>
+          <div class="detail-label">Country of Origin</div>
+          <div class="detail-value">France · Molsheim, Alsace</div>
+          <div class="detail-sub">Bugatti Automobiles, Ettore Bugatti</div>
+        </div>
+
+        <div class="detail-card fade-in">
+          <span class="detail-icon">🔒</span>
+          <div class="detail-label">Insurance Status</div>
+          <div class="detail-value"><span class="badge badge-green">Active — Fully Covered</span></div>
+          <div class="detail-sub">Agreed value $50M · Chubb Fine Art &amp; Collections</div>
+        </div>
+
+        <div class="detail-card wide fade-in">
+          <span class="detail-icon">📜</span>
+          <div class="detail-label">Provenance &amp; Ownership History</div>
+          <ul class="provenance-list" style="margin-top:12px;">
+            <li class="provenance-item"><span class="prov-year">1937</span> Delivered new to King Leopold III of Belgium
+              — royal commission</li>
+            <li class="provenance-item"><span class="prov-year">1948</span> Acquired by Robert Schlumberger, Paris —
+              held in private collection for three decades</li>
+            <li class="provenance-item"><span class="prov-year">1979</span> Exhibited at Musée National de l'Automobile
+              de Mulhouse; restoration consultation by factory archivists</li>
+            <li class="provenance-item"><span class="prov-year">2001</span> Transferred to North American collector
+              following private treaty sale — $9.8M</li>
+            <li class="provenance-item"><span class="prov-year">2018</span> Acquired at RM Sotheby's Amelia Island
+              concours auction — current ownership</li>
+          </ul>
+        </div>
+
+        <div class="detail-card wide fade-in">
+          <span class="detail-icon">🏆</span>
+          <div class="detail-label">Awards &amp; Notable Appearances</div>
+          <ul class="provenance-list" style="margin-top:12px;">
+            <li class="provenance-item"><span class="prov-year">2018</span> Best of Show — Pebble Beach Concours
+              d'Élégance</li>
+            <li class="provenance-item"><span class="prov-year">2020</span> Voted #1 Most Beautiful Car of All Time —
+              Automotive Magazine International</li>
+            <li class="provenance-item"><span class="prov-year">2022</span> Featured in Petersen Automotive Museum
+              "Icons" Exhibition, Los Angeles</li>
+            <li class="provenance-item"><span class="prov-year">2024</span> Honorary display — Geneva Motor Show
+              centenary retrospective</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 02: PERFORMANCE ANALYTICS -->
+    <section id="performance" class="perf-column">
+      <div class="section-header">
+        <span class="section-number">02</span>
+        <h2 class="section-title">Performance Analytics</h2>
+        <span class="section-desc">Estimated market value over time</span>
+      </div>
+
+      <div class="perf-layout">
+        <div class="chart-panel">
+          <div class="chart-title">Estimated Value Progression</div>
+          <div class="chart-sub">Quarterly appraisals vs comparable market index, 2018–2026</div>
+          <div class="chart-wrap chart-h">
+            <canvas #mainChart></canvas>
+          </div>
+        </div>
+
+        <div class="stats-panel">
+          <div class="stat-item">
+            <div class="stat-label">Total Appreciation</div>
+            <div class="stat-value">+52.2%</div>
+            <div class="stat-change up">▲ Since acquisition 2018</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">CAGR (8 Years)</div>
+            <div class="stat-value">+5.5%</div>
+            <div class="stat-change up">▲ Annualised</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">vs Vintage Auto Index</div>
+            <div class="stat-value">+12.4%</div>
+            <div class="stat-change up">▲ Alpha over benchmark</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">52-Week High</div>
+            <div class="stat-value">$47.5M</div>
+            <div class="stat-change" style="color:var(--text-muted);">— Current price</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">52-Week Low</div>
+            <div class="stat-value">$42.1M</div>
+            <div class="stat-change" style="color:var(--text-muted);">— Q1 2025</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Liquidity Estimate</div>
+            <div class="stat-value" style="font-size:20px;">6 – 14 mo.</div>
+            <div class="stat-change" style="color:var(--text-muted);">Time-to-sale at market</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="perf-bottom">
+        <div class="mini-chart-panel">
+          <div class="chart-title" style="font-size:15px;">Annual Return vs Comparable Index</div>
+          <div class="chart-sub" style="font-size:12px;margin-bottom:16px;">Per-year performance breakdown</div>
+          <div class="chart-wrap mini-chart-h">
+            <canvas #barChart></canvas>
+          </div>
+        </div>
+        <div class="mini-chart-panel">
+          <div class="chart-title" style="font-size:15px;">Collectible Asset Class Allocation</div>
+          <div class="chart-sub" style="font-size:12px;margin-bottom:16px;">Portfolio context by category</div>
+          <div class="chart-wrap mini-chart-h">
+            <canvas #donutChart></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 03: TRANSACTION HISTORY -->
+      <section id="transactions" class="transactions-in-column">
+        <div class="section-header">
+          <span class="section-number">03</span>
+          <h2 class="section-title">Transaction History</h2>
+          <span class="section-desc">Comparable sales &amp; appraisals for Type 57SC Atlantics</span>
+        </div>
+
+        <div class="table-wrap">
+          <div class="table-header-row">
+            <div class="th">Date</div>
+            <div class="th">Description</div>
+            <div class="th">Sale Price</div>
+            <div class="th">Location</div>
+            <div class="th">Type</div>
+            <div class="th">Δ vs Prior</div>
+          </div>
+          <div class="table-body">
+            @for (row of transactions; track row.date + row.description) {
+            <div class="table-row">
+              <div class="td date">{{ row.date }}</div>
+              <div class="td">{{ row.description }}</div>
+              <div class="td price">{{ row.price }}</div>
+              <div class="td location">{{ row.location }}</div>
+              <div class="td"><span [class]="'row-badge badge-' + row.type">{{ row.typeLabel }}</span></div>
+              <div class="td" [class.up]="row.changeClass === 'up'" [class.down]="row.changeClass === 'down'">{{
+                row.change }}</div>
+            </div>
+            }
+          </div>
+          <div class="table-footer">
+            <span class="table-footer-text">10 records · Type 57SC Atlantic comparable sales</span>
+            <span class="table-total">Total Appreciation: <span>+$16,300,000</span></span>
+          </div>
+        </div>
+      </section>
+    </section>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <span class="footer-text">Qplix Asset Intelligence Platform · Asset ID: AUT-57591-BUG</span>
+    <span class="footer-text">© 2026 Qplix GmbH</span>
+  </footer>
+</div>
